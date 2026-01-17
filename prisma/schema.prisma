@@ -1,0 +1,80 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+model NonPlace {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  geofence Unsupported("geometry(MultiPolygon, 4326)")
+
+  broadcasts Broadcast[]
+  users      User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(uuid())
+  handle    String   @default("anonymous")
+  expiresAt DateTime
+
+  nonplace   NonPlace? @relation(fields: [nonplaceId], references: [id])
+  nonplaceId String?
+
+  broadcast        Broadcast[]
+  uplinksInitiated Uplink[]    @relation("Initiator")
+  uplinksReceived  Uplink[]    @relation("Receiver")
+  message          Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Broadcast {
+  id      String @id @default(uuid())
+  content String
+
+  anonymous   User     @relation(fields: [anonymousId], references: [id], onDelete: Cascade)
+  anonymousId String
+  nonplace    NonPlace @relation(fields: [nonplaceId], references: [id])
+  nonplaceId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+}
+
+model Uplink {
+  id String @id @default(uuid())
+
+  initiatorId String
+  receiverId  String
+  initiator   User   @relation("Initiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+  receiver    User   @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id      String @id @default(uuid())
+  content String
+
+  uplink   Uplink? @relation(fields: [uplinkId], references: [id])
+  uplinkId String?
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+}

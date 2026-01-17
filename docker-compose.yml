@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # This is the name of our service
+  db:
+    # THE SECRET SAUCE: We use the specialized PostGIS image, not standard Postgres
+    image: postgis/postgis:16-3.4
+    
+    # Forward the database port to your computer so Prisma can see it
+    ports:
+      - "5432:5432"
+    
+    # Set default username/password/db name
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: liminal_db
+    
+    # Save the data to a "virtual hard drive" so it persists when you restart
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# Define the virtual hard drive
+volumes:
+  postgres_data:
