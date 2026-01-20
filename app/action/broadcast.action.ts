@@ -27,20 +27,24 @@ export const postBroadcast = async (formData: FormData): Promise<{ error?: strin
       orderBy: { createdAt: "desc" }, // Get the newest one
     });
 
-    if (lastBroadcast) {
-      const timeSinceLastPost = Date.now() - new Date(lastBroadcast.createdAt).getTime();
+    // if (lastBroadcast) {
+    //   const timeSinceLastPost = Date.now() - new Date(lastBroadcast.createdAt).getTime();
 
-      // 10 minutes * 60 seconds * 1000 milliseconds
-      const TEN_MINUTES = 600000;
-      if (timeSinceLastPost < TEN_MINUTES) {
-        // Calculate how many minutes are left to show the user
-        const minutesLeft = Math.ceil((TEN_MINUTES - timeSinceLastPost) / 60000);
-        return { error: `To avoid spam, you can post a broadcast again in ${minutesLeft} minutes.` };
-      }
-    }
+    //   // 10 minutes * 60 seconds * 1000 milliseconds
+    //   const TEN_MINUTES = 600000;
+    //   if (timeSinceLastPost < TEN_MINUTES) {
+    //     // Calculate how many minutes are left to show the user
+    //     const minutesLeft = Math.ceil((TEN_MINUTES - timeSinceLastPost) / 60000);
+    //     return { error: `To avoid spam, you can post a broadcast again in ${minutesLeft} minutes.` };
+    //   }
+    // }
 
     const content = formData.get("text") as string;
     const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
+
+    if (content.trim().length < 0) {
+      return { success: false };
+    }
 
     await prisma.broadcast.create({
       data: {

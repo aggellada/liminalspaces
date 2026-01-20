@@ -1,7 +1,36 @@
 import { Clock, MapPin, UserX } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getOrCreateUser } from "../action/user.action";
+import { useGeofence } from "@/lib/hooks/useGeofence";
 
-function Session() {
+type AnonymousData = NonNullable<Awaited<ReturnType<typeof getOrCreateUser>>>;
+
+interface SessionProps {
+  anonymous: AnonymousData;
+}
+
+function Session({ anonymous }: SessionProps) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const expiresAtMs = new Date(anonymous.expiresAt).getTime();
+  const diffMs = Math.max(0, expiresAtMs - now);
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const { nonPlace } = useGeofence();
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* 1. IDENTITY CARD */}
@@ -13,7 +42,7 @@ function Session() {
           <span className="font-mono text-2xl text-zinc-200 tracking-tighter">001</span>
         </div>
 
-        <h2 className="text-2xl font-bold text-white tracking-tight">ANON-001</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">{anonymous.handle}</h2>
         <p className="text-xs font-mono text-emerald-500 uppercase tracking-widest mt-2">
           Connected • Verified Traveler
         </p>
@@ -26,7 +55,10 @@ function Session() {
             <Clock className="w-4 h-4" />
             <span className="text-[10px] font-mono uppercase tracking-widest">Time Remaining</span>
           </div>
-          <div className="text-3xl font-mono text-zinc-200 font-light">03:59:12</div>
+          <div className="text-3xl font-mono text-zinc-200 font-light">
+            {hours.toString().padStart(2, "0")}:{minutes.toString().padStart(2, "0")}:
+            {seconds.toString().padStart(2, "0")}
+          </div>
           <div className="w-full bg-zinc-800 h-1 mt-4 rounded-full overflow-hidden">
             <div className="bg-indigo-500 w-[90%] h-full"></div>
           </div>
@@ -35,13 +67,11 @@ function Session() {
         <div className="p-5 border border-white/5 bg-zinc-900/30 rounded-lg">
           <div className="flex items-center gap-2 text-zinc-500 mb-2">
             <MapPin className="w-4 h-4" />
-            <span className="text-[10px] font-mono uppercase tracking-widest">Zone Radius</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest">Zone</span>
           </div>
-          <div className="text-3xl font-mono text-zinc-200 font-light">
-            120<span className="text-sm text-zinc-600 ml-1">m</span>
-          </div>
+          <div className="text-3xl font-mono text-zinc-200 font-light">{nonPlace}</div>
           <p className="text-[10px] text-zinc-500 mt-3 leading-tight">
-            Leaving this radius will sever all active Uplinks instantly.
+            Leaving this location will sever all active Uplinks and Broadcasts instantly.
           </p>
         </div>
       </div>
@@ -52,7 +82,7 @@ function Session() {
         <div className="space-y-4">
           <div className="flex justify-between items-center border-b border-white/5 pb-2">
             <span className="text-sm text-zinc-400">Broadcasts Sent</span>
-            <span className="font-mono text-white">4</span>
+            <span className="font-mono text-white">{anonymous?._count.broadcasts}</span>
           </div>
           <div className="flex justify-between items-center border-b border-white/5 pb-2">
             <span className="text-sm text-zinc-400">Echoes Received</span>

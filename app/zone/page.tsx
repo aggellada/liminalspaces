@@ -1,10 +1,10 @@
 "use client";
 
 import { useGeofence } from "@/lib/hooks/useGeofence";
-import EnteringZone from "../components/EnteringZone";
+import EnteringZone from "../components/UI/EnteringZone";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import MalfunctionScreen from "../components/MalfunctionScreen";
+import MalfunctionScreen from "../components/UI/MalfunctionScreen";
 
 const Zone = () => {
   const router = useRouter();

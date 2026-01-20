@@ -19,6 +19,15 @@ export const getOrCreateUser = async () => {
   try {
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        _count: {
+          select: {
+            uplinksInitiated: true,
+            uplinksReceived: true,
+            broadcast: true,
+          },
+        },
+      },
     });
 
     if (existingUser) {

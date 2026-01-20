@@ -1,13 +1,12 @@
 "use client";
 
 import { useGeofence } from "@/lib/hooks/useGeofence";
-import React from "react";
 import { getOrCreateUser } from "../action/user.action";
 
-type AnonymousType = NonNullable<Awaited<ReturnType<typeof getOrCreateUser>>>;
+type AnonymousData = NonNullable<Awaited<ReturnType<typeof getOrCreateUser>>>;
 
 interface TopBarProps {
-  anonymous: AnonymousType;
+  anonymous: AnonymousData;
 }
 
 function TopBar({ anonymous }: TopBarProps) {

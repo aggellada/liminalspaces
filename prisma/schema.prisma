@@ -72,9 +72,10 @@ model Message {
   id      String @id @default(uuid())
   content String
 
-  uplink   Uplink? @relation(fields: [uplinkId], references: [id])
   uplinkId String?
-
   senderId String
-  sender   User   @relation(fields: [senderId], references: [id])
+  uplink   Uplink? @relation(fields: [uplinkId], references: [id])
+  sender   User    @relation(fields: [senderId], references: [id])
+
+  createdAt DateTime @default(now())
 }

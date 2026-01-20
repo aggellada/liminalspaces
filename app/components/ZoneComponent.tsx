@@ -6,20 +6,24 @@ import Broadcasts from "./Broadcasts";
 import Uplinks from "./Uplinks";
 import RadarMap from "./Radar";
 import Session from "@/app/components/Session";
-import NavButton from "./NavButton";
+import NavButton from "./UI/NavButton";
 import { MessageSquareDashed, Radar, Radio, UserX } from "lucide-react";
 import { getNonplaceBroadcasts } from "../action/broadcast.action";
 import { getOrCreateUser } from "../action/user.action";
+import { getAllUplinks, getOrCreateUplink } from "../action/uplink.action";
 
 type BroadcastList = NonNullable<Awaited<ReturnType<typeof getNonplaceBroadcasts>>>;
 type AnonymousUser = NonNullable<Awaited<ReturnType<typeof getOrCreateUser>>>;
+type UplinkData = Awaited<ReturnType<typeof getAllUplinks>>;
 
 interface ZoneComponentProps {
   broadcasts: BroadcastList | null;
   anonymous: AnonymousUser;
+  initializeUplink: (receiverId: string) => Promise<any>;
+  uplinks: UplinkData;
 }
 
-function ZoneComponent({ broadcasts, anonymous }: ZoneComponentProps) {
+function ZoneComponent({ broadcasts, anonymous, initializeUplink, uplinks }: ZoneComponentProps) {
   const [activeTab, setActiveTab] = useState<string>("broadcasts");
 
   return (
@@ -28,9 +32,11 @@ function ZoneComponent({ broadcasts, anonymous }: ZoneComponentProps) {
 
       {/* --- MAIN CONTENT AREA --- */}
       <main className="flex-1 pt-20 pb-48 px-4 md:px-0 max-w-2xl mx-auto w-full overflow-y-auto no-scrollbar">
-        {activeTab === "broadcasts" && <Broadcasts broadcasts={broadcasts} />}
-        {activeTab === "frequencies" && <Uplinks />}
-        {activeTab === "session" && <Session />}
+        {activeTab === "broadcasts" && (
+          <Broadcasts initializeUplink={initializeUplink} broadcasts={broadcasts} />
+        )}
+        {activeTab === "frequencies" && <Uplinks uplinks={uplinks} anonymous={anonymous} />}
+        {activeTab === "session" && <Session anonymous={anonymous} />}
         {activeTab === "radar" && <RadarMap />}
       </main>
 
